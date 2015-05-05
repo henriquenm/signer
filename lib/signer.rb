@@ -220,6 +220,7 @@ class Signer
     transform_node = Nokogiri::XML::Node.new('Transform', document)
     if options[:enveloped]
       transform_node['Algorithm'] = 'http://www.w3.org/2000/09/xmldsig#enveloped-signature'
+      transform_node['Algorithm'] = 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315'
     else
       transform_node['Algorithm'] = 'http://www.w3.org/2001/10/xml-exc-c14n#'
     end
