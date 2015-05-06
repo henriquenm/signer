@@ -300,13 +300,12 @@ class Signer
 
   def namespace_prefix(target_node, namespace, desired_prefix = nil)
     ns = target_node.namespaces.key(namespace)
-    puts "target_node: #{target_node}"
-    puts "namespace: #{namespace}"
-    puts "ns: #{ns}"
     if ns
       ns.match(/(?:xmlns:)?(.*)/) && $1
     elsif desired_prefix
       target_node.add_namespace_definition(desired_prefix, namespace)
+      puts "desired_prefix: #{desired_prefix}"
+      puts "target_node: #{target_node}"
       desired_prefix
     end
   end
