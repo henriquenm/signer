@@ -299,15 +299,13 @@ class Signer
   # adds such a namespace to +target_node+ with +desired_prefix+
 
   def namespace_prefix(target_node, namespace, desired_prefix = nil)
-    target_node.add_namespace_definition(desired_prefix, namespace)
-    desired_prefix
-    # ns = target_node.namespaces.key(namespace)
-    # if ns
-    #   ns.match(/(?:xmlns:)?(.*)/) && $1
-    # elsif desired_prefix
-    #   target_node.add_namespace_definition(desired_prefix, namespace)
-    #   desired_prefix
-    # end
+    ns = target_node.namespaces.key(namespace)
+    if ns
+      ns.match(/(?:xmlns:)?(.*)/) && $1
+    elsif desired_prefix
+      target_node.add_namespace_definition(desired_prefix, namespace)
+      desired_prefix
+    end
   end
 
 end
