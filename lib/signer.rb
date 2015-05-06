@@ -120,28 +120,28 @@ class Signer
   #     <o:Reference ValueType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3" URI="#uuid-639b8970-7644-4f9e-9bc4-9c2e367808fc-1"/>
   #   </o:SecurityTokenReference>
   # </KeyInfo>
-  def binary_security_token_node
-    node = document.at_xpath('wsse:BinarySecurityToken', wsse: WSSE_NAMESPACE)
-    unless node
-      node = Nokogiri::XML::Node.new('BinarySecurityToken', document)
-      node['ValueType']    = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3'
-      node['EncodingType'] = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary'
-      node.content = Base64.encode64(cert.to_der).gsub("\n", '')
-      signature_node.add_previous_sibling(node)
-      wsse_ns = namespace_prefix(node, WSSE_NAMESPACE, 'wsse')
-      wsu_ns = namespace_prefix(node, WSU_NAMESPACE, 'wsu')
-      node["#{wsu_ns}:Id"] = security_token_id
-      key_info_node = Nokogiri::XML::Node.new('KeyInfo', document)
-      security_token_reference_node = Nokogiri::XML::Node.new("#{wsse_ns}:SecurityTokenReference", document)
-      key_info_node.add_child(security_token_reference_node)
-      reference_node = Nokogiri::XML::Node.new("#{wsse_ns}:Reference", document)
-      reference_node['ValueType'] = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3'
-      reference_node['URI'] = "##{security_token_id}"
-      security_token_reference_node.add_child(reference_node)
-      signed_info_node.add_next_sibling(key_info_node)
-    end
-    node
-  end
+  # def binary_security_token_node
+  #   node = document.at_xpath('wsse:BinarySecurityToken', wsse: WSSE_NAMESPACE)
+  #   unless node
+  #     node = Nokogiri::XML::Node.new('BinarySecurityToken', document)
+  #     node['ValueType']    = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3'
+  #     node['EncodingType'] = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary'
+  #     node.content = Base64.encode64(cert.to_der).gsub("\n", '')
+  #     signature_node.add_previous_sibling(node)
+  #     wsse_ns = namespace_prefix(node, WSSE_NAMESPACE, 'wsse')
+  #     wsu_ns = namespace_prefix(node, WSU_NAMESPACE, 'wsu')
+  #     node["#{wsu_ns}:Id"] = security_token_id
+  #     key_info_node = Nokogiri::XML::Node.new('KeyInfo', document)
+  #     security_token_reference_node = Nokogiri::XML::Node.new("#{wsse_ns}:SecurityTokenReference", document)
+  #     key_info_node.add_child(security_token_reference_node)
+  #     reference_node = Nokogiri::XML::Node.new("#{wsse_ns}:Reference", document)
+  #     reference_node['ValueType'] = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3'
+  #     reference_node['URI'] = "##{security_token_id}"
+  #     security_token_reference_node.add_child(reference_node)
+  #     signed_info_node.add_next_sibling(key_info_node)
+  #   end
+  #   node
+  # end
 
   # <KeyInfo>
   #   <X509Data>
