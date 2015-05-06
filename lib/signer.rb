@@ -73,7 +73,7 @@ class Signer
   end
 
   def canonicalize(node = document, inclusive_namespaces=nil)
-    node.canonicalize(Nokogiri::XML::XML_C14N_EXCLUSIVE_1_0, inclusive_namespaces, nil) # The last argument should be exactly +nil+ to remove comments from result
+    node.canonicalize(Nokogiri::XML::XML_C14N_1_0, inclusive_namespaces, nil) # The last argument should be exactly +nil+ to remove comments from result
   end
 
   # <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
@@ -100,7 +100,7 @@ class Signer
       node = Nokogiri::XML::Node.new('SignedInfo', document)
       signature_node.add_child(node)
       canonicalization_method_node = Nokogiri::XML::Node.new('CanonicalizationMethod', document)
-      canonicalization_method_node['Algorithm'] = 'http://www.w3.org/2001/10/xml-exc-c14n#'
+      canonicalization_method_node['Algorithm'] = 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315'
       node.add_child(canonicalization_method_node)
       signature_method_node = Nokogiri::XML::Node.new('SignatureMethod', document)
       signature_method_node['Algorithm'] = self.signature_algorithm_id
@@ -153,21 +153,21 @@ class Signer
   #   </X509Data>
   # </KeyInfo>
   def x509_data_node
-    issuer_name_node   = Nokogiri::XML::Node.new('X509IssuerName', document)
-    issuer_name_node.content = "System.Security.Cryptography.X509Certificates.X500DistinguishedName"
+    # issuer_name_node   = Nokogiri::XML::Node.new('X509IssuerName', document)
+    # issuer_name_node.content = "System.Security.Cryptography.X509Certificates.X500DistinguishedName"
 
-    issuer_number_node = Nokogiri::XML::Node.new('X509SerialNumber', document)
-    issuer_number_node.content = cert.serial
+    # issuer_number_node = Nokogiri::XML::Node.new('X509SerialNumber', document)
+    # issuer_number_node.content = cert.serial
 
-    issuer_serial_node = Nokogiri::XML::Node.new('X509IssuerSerial', document)
-    issuer_serial_node.add_child(issuer_name_node)
-    issuer_serial_node.add_child(issuer_number_node)
+    # issuer_serial_node = Nokogiri::XML::Node.new('X509IssuerSerial', document)
+    # issuer_serial_node.add_child(issuer_name_node)
+    # issuer_serial_node.add_child(issuer_number_node)
 
     cetificate_node    = Nokogiri::XML::Node.new('X509Certificate', document)
     cetificate_node.content = Base64.encode64(cert.to_der).gsub("\n", '')
 
     data_node          = Nokogiri::XML::Node.new('X509Data', document)
-    data_node.add_child(issuer_serial_node)
+    # data_node.add_child(issuer_serial_node)
     data_node.add_child(cetificate_node)
 
     key_info_node      = Nokogiri::XML::Node.new('KeyInfo', document)
@@ -217,20 +217,23 @@ class Signer
     transforms_node = Nokogiri::XML::Node.new('Transforms', document)
     reference_node.add_child(transforms_node)
 
-    transform_node = Nokogiri::XML::Node.new('Transform', document)
+    transform_node_1 = Nokogiri::XML::Node.new('Transform', document)
+    transform_node_2 = Nokogiri::XML::Node.new('Transform', document)
     if options[:enveloped]
-      transform_node['Algorithm'] = 'http://www.w3.org/2000/09/xmldsig#enveloped-signature'
-      transform_node['Algorithm'] = 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315'
+      transform_node_1['Algorithm'] = 'http://www.w3.org/2000/09/xmldsig#enveloped-signature'
+      transform_node_2['Algorithm'] = 'http://www.w3.org/TR/2001/REC-xml-c14n-20010315'
     else
-      transform_node['Algorithm'] = 'http://www.w3.org/2001/10/xml-exc-c14n#'
+      transform_node_1['Algorithm'] = 'http://www.w3.org/2001/10/xml-exc-c14n#'
     end
     if options[:inclusive_namespaces]
       inclusive_namespaces_node = Nokogiri::XML::Node.new('ec:InclusiveNamespaces', document)
       inclusive_namespaces_node.add_namespace_definition('ec', transform_node['Algorithm'])
       inclusive_namespaces_node['PrefixList'] = options[:inclusive_namespaces].join(' ')
-      transform_node.add_child(inclusive_namespaces_node)
+      transform_node_1.add_child(inclusive_namespaces_node)
+      transform_node_2.add_child(inclusive_namespaces_node)
     end
-    transforms_node.add_child(transform_node)
+    transforms_node_1.add_child(transform_node)
+    transforms_node_2.add_child(transform_node)
 
     digest_method_node = Nokogiri::XML::Node.new('DigestMethod', document)
     digest_method_node['Algorithm'] = @digester.digest_id
