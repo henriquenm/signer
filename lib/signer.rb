@@ -232,8 +232,8 @@ class Signer
       transform_node_1.add_child(inclusive_namespaces_node)
       transform_node_2.add_child(inclusive_namespaces_node)
     end
-    transforms_node_1.add_child(transform_node)
-    transforms_node_2.add_child(transform_node)
+    transforms_node.add_child(transform_node_1)
+    transforms_node.add_child(transform_node_2)
 
     digest_method_node = Nokogiri::XML::Node.new('DigestMethod', document)
     digest_method_node['Algorithm'] = @digester.digest_id
