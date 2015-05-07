@@ -200,6 +200,7 @@ class Signer
   #   </Reference>
 
   def digest!(target_node, options = {})
+    puts target_node
     # wsu_ns = namespace_prefix(target_node, WSU_NAMESPACE)
     # current_id = target_node["#{wsu_ns}:Id"]  if wsu_ns
     id = options[:id] || "_#{Digest::SHA1.hexdigest(target_node.to_s)}"
