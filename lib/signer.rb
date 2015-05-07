@@ -69,7 +69,7 @@ class Signer
   end
 
   def security_node
-    puts document.xpath('//wsse:Security', wsse: WSSE_NAMESPACE).first
+    puts @security_node
     @security_node ||= document.xpath('//wsse:Security', wsse: WSSE_NAMESPACE).first
   end
 
