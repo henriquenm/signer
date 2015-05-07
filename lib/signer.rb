@@ -81,6 +81,7 @@ class Signer
     @signature_node ||= begin
       @signature_node = security_node.at_xpath('ds:Signature', ds: 'http://www.w3.org/2000/09/xmldsig#')
       unless @signature_node
+        puts "=================== caiu"
         @signature_node = Nokogiri::XML::Node.new('Signature', document)
         @signature_node.default_namespace = 'http://www.w3.org/2000/09/xmldsig#'
         security_node.add_child(@signature_node)
