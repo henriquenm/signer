@@ -69,7 +69,7 @@ class Signer
   end
 
   def security_node
-    @security_node ||= document.xpath('//wsse:Security', wsse: WSSE_NAMESPACE).first
+    @security_node.xpath("//NFe")# ||= document.xpath('//wsse:Security', wsse: WSSE_NAMESPACE).first
   end
 
   def canonicalize(node = document, inclusive_namespaces=nil)
