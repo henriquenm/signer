@@ -200,12 +200,12 @@ class Signer
   #   </Reference>
 
   def digest!(target_node, options = {})
-    wsu_ns = namespace_prefix(target_node, WSU_NAMESPACE)
-    current_id = target_node["#{wsu_ns}:Id"]  if wsu_ns
-    id = options[:id] || current_id || "_#{Digest::SHA1.hexdigest(target_node.to_s)}"
+    # wsu_ns = namespace_prefix(target_node, WSU_NAMESPACE)
+    # current_id = target_node["#{wsu_ns}:Id"]  if wsu_ns
+    id = options[:id] || "_#{Digest::SHA1.hexdigest(target_node.to_s)}"
     if id.to_s.size > 0
-      wsu_ns ||= namespace_prefix(target_node, WSU_NAMESPACE, 'wsu')
-      target_node["#{wsu_ns}:Id"] = id.to_s
+      # wsu_ns ||= namespace_prefix(target_node, WSU_NAMESPACE, 'wsu')
+      # target_node["#{wsu_ns}:Id"] = id.to_s
     end
     target_canon = canonicalize(target_node, options[:inclusive_namespaces])
     target_digest = Base64.encode64(@digester.digest(target_canon)).strip
