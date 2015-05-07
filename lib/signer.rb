@@ -69,7 +69,7 @@ class Signer
   end
 
   def security_node
-    @security_node ||= document.xpath('//wsse:Security', wsse: WSSE_NAMESPACE).first
+    @security_node.xpath("//NFe").first# ||= document.xpath('//wsse:Security', wsse: WSSE_NAMESPACE).first
   end
 
   def canonicalize(node = document, inclusive_namespaces=nil)
@@ -83,7 +83,6 @@ class Signer
       unless @signature_node
         @signature_node = Nokogiri::XML::Node.new('Signature', document)
         @signature_node.default_namespace = 'http://www.w3.org/2000/09/xmldsig#'
-        puts @signature_node
         security_node.add_child(@signature_node)
       end
       @signature_node
