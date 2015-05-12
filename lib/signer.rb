@@ -56,12 +56,10 @@ class Signer
     # Try to guess a digest algorithm for signature creation
     case @cert.signature_algorithm
       when 'GOST R 34.11-94 with GOST R 34.10-2001'
-        puts "naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaao"
         self.signature_digest_algorithm = :gostr3411
         self.signature_algorithm_id = 'http://www.w3.org/2001/04/xmldsig-more#gostr34102001-gostr3411'
       # Add clauses for other types of keys that require other digest algorithms and identifiers
       else # most common 'sha1WithRSAEncryption' type included here
-        puts "yoooooooooooo muthafucka"
         self.set_default_signature_method! # Reset any changes as they can become malformed
     end
   end
@@ -71,7 +69,7 @@ class Signer
   end
 
   def security_node
-    @security_node.xpath("/*[name()='nfeProc']/*[name()='NFe']").first# ||= document.xpath('//wsse:Security', wsse: WSSE_NAMESPACE).first
+    @security_node.xpath("/*[name()='NFe']").first# ||= document.xpath('//wsse:Security', wsse: WSSE_NAMESPACE).first
   end
 
   def canonicalize(node = document, inclusive_namespaces=nil)
