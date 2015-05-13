@@ -209,7 +209,7 @@ class Signer
     end
     target_canon = canonicalize(target_node, options[:inclusive_namespaces])
     target_digest = Base64.encode64(@digester.digest(target_canon)).strip
-    target_digest = "I8/IBe4RpzAtDPibRO3/lJO9lQM="
+    # target_digest = "I8/IBe4RpzAtDPibRO3/lJO9lQM="
 
     reference_node = Nokogiri::XML::Node.new('Reference', document)
     reference_node['URI'] = id.to_s.size > 0 ? "##{id}" : ""
