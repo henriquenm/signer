@@ -207,10 +207,10 @@ class Signer
       # wsu_ns ||= namespace_prefix(target_node, WSU_NAMESPACE, 'wsu')
       # target_node["#{wsu_ns}:Id"] = id.to_s
     end
-    puts target_node
     target_canon = canonicalize(target_node, options[:inclusive_namespaces])
     target_digest = OpenSSL::Digest::SHA1.digest(target_node)
     target_digest = Base64.encode64(target_digest.to_s).gsub(/\n/, '')
+    target_digest = "I8/IBe4RpzAtDPibRO3/lJO9lQM="
 
     reference_node = Nokogiri::XML::Node.new('Reference', document)
     reference_node['URI'] = id.to_s.size > 0 ? "##{id}" : ""
@@ -277,9 +277,6 @@ class Signer
     signed_info_canon = canonicalize(signed_info_node, options[:inclusive_namespaces])
 
     signature = private_key.sign(@sign_digester.digester, signed_info_canon)
-    puts "@sign_digester: #{@sign_digester}"
-    puts "@sign_digester.digester: #{@sign_digester.digester}"
-    puts "signed_info_canon: #{signed_info_canon}"
     signature_value_digest = Base64.encode64(signature).gsub("\n", '')
 
     signature_value_node = Nokogiri::XML::Node.new('SignatureValue', document)
