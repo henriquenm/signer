@@ -207,6 +207,7 @@ class Signer
       # wsu_ns ||= namespace_prefix(target_node, WSU_NAMESPACE, 'wsu')
       # target_node["#{wsu_ns}:Id"] = id.to_s
     end
+    puts target_node
     target_canon = canonicalize(target_node, options[:inclusive_namespaces])
     target_digest = OpenSSL::Digest::SHA1.digest(target_node)
     target_digest = Base64.encode64(target_digest.to_s).gsub(/\n/, '')
