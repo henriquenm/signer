@@ -69,7 +69,7 @@ class Signer
   end
 
   def security_node
-    @security_node.xpath("/*[name()='enviNFe']/*[name()='NFe']").first# ||= document.xpath('//wsse:Security', wsse: WSSE_NAMESPACE).first
+    @security_node.xpath("/*[name()='NFe']").first# ||= document.xpath('//wsse:Security', wsse: WSSE_NAMESPACE).first
   end
 
   def canonicalize(node = document, inclusive_namespaces=nil)
@@ -109,40 +109,6 @@ class Signer
     node
   end
 
-  # <o:BinarySecurityToken u:Id="" ValueType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3" EncodingType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary">
-  #   ...
-  # </o:BinarySecurityToken>
-  # <SignedInfo>
-  #   ...
-  # </SignedInfo>
-  # <KeyInfo>
-  #   <o:SecurityTokenReference>
-  #     <o:Reference ValueType="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3" URI="#uuid-639b8970-7644-4f9e-9bc4-9c2e367808fc-1"/>
-  #   </o:SecurityTokenReference>
-  # </KeyInfo>
-  # def binary_security_token_node
-  #   node = document.at_xpath('wsse:BinarySecurityToken', wsse: WSSE_NAMESPACE)
-  #   unless node
-  #     node = Nokogiri::XML::Node.new('BinarySecurityToken', document)
-  #     node['ValueType']    = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3'
-  #     node['EncodingType'] = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary'
-  #     node.content = Base64.encode64(cert.to_der).gsub("\n", '')
-  #     signature_node.add_previous_sibling(node)
-  #     wsse_ns = namespace_prefix(node, WSSE_NAMESPACE, 'wsse')
-  #     wsu_ns = namespace_prefix(node, WSU_NAMESPACE, 'wsu')
-  #     node["#{wsu_ns}:Id"] = security_token_id
-  #     key_info_node = Nokogiri::XML::Node.new('KeyInfo', document)
-  #     security_token_reference_node = Nokogiri::XML::Node.new("#{wsse_ns}:SecurityTokenReference", document)
-  #     key_info_node.add_child(security_token_reference_node)
-  #     reference_node = Nokogiri::XML::Node.new("#{wsse_ns}:Reference", document)
-  #     reference_node['ValueType'] = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3'
-  #     reference_node['URI'] = "##{security_token_id}"
-  #     security_token_reference_node.add_child(reference_node)
-  #     signed_info_node.add_next_sibling(key_info_node)
-  #   end
-  #   node
-  # end
-
   # <KeyInfo>
   #   <X509Data>
   #     <X509IssuerSerial>
@@ -153,21 +119,10 @@ class Signer
   #   </X509Data>
   # </KeyInfo>
   def x509_data_node
-    # issuer_name_node   = Nokogiri::XML::Node.new('X509IssuerName', document)
-    # issuer_name_node.content = "System.Security.Cryptography.X509Certificates.X500DistinguishedName"
-
-    # issuer_number_node = Nokogiri::XML::Node.new('X509SerialNumber', document)
-    # issuer_number_node.content = cert.serial
-
-    # issuer_serial_node = Nokogiri::XML::Node.new('X509IssuerSerial', document)
-    # issuer_serial_node.add_child(issuer_name_node)
-    # issuer_serial_node.add_child(issuer_number_node)
-
     cetificate_node    = Nokogiri::XML::Node.new('X509Certificate', document)
     cetificate_node.content = Base64.encode64(cert.to_der).gsub("\n", '')
 
     data_node          = Nokogiri::XML::Node.new('X509Data', document)
-    # data_node.add_child(issuer_serial_node)
     data_node.add_child(cetificate_node)
 
     key_info_node      = Nokogiri::XML::Node.new('KeyInfo', document)
@@ -200,15 +155,9 @@ class Signer
   #   </Reference>
 
   def digest!(target_node, options = {})
-    # wsu_ns = namespace_prefix(target_node, WSU_NAMESPACE)
-    # current_id = target_node["#{wsu_ns}:Id"]  if wsu_ns
     id = options[:id] || "_#{Digest::SHA1.hexdigest(target_node.to_s)}"
-    if id.to_s.size > 0
-      # wsu_ns ||= namespace_prefix(target_node, WSU_NAMESPACE, 'wsu')
-      # target_node["#{wsu_ns}:Id"] = id.to_s
-    end
-    target_canon = canonicalize(target_node, options[:inclusive_namespaces])
-    target_digest = Base64.encode64(@digester.digest(target_canon)).strip
+    target_digest = OpenSSL::Digest::SHA1.digest(target_node)
+    target_digest = Base64.encode64(target_digest.to_s).gsub(/\n/, '')
 
     reference_node = Nokogiri::XML::Node.new('Reference', document)
     reference_node['URI'] = id.to_s.size > 0 ? "##{id}" : ""
