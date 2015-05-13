@@ -209,7 +209,7 @@ class Signer
     end
     target_canon = canonicalize(target_node, options[:inclusive_namespaces])
     target_digest = OpenSSL::Digest::SHA1.digest(target_node)
-    target_digest = Base64.encode64(digest.to_s).gsub(/\n/, '')
+    target_digest = Base64.encode64(target_digest.to_s).gsub(/\n/, '')
 
     reference_node = Nokogiri::XML::Node.new('Reference', document)
     reference_node['URI'] = id.to_s.size > 0 ? "##{id}" : ""
