@@ -275,7 +275,9 @@ class Signer
     signed_info_canon = canonicalize(signed_info_node, options[:inclusive_namespaces])
 
     signature = private_key.sign(@sign_digester.digester, signed_info_canon)
-    puts @sign_digester.digester
+    puts "@sign_digester: #{@sign_digester}"
+    puts "@sign_digester.digester: #{@sign_digester.digester}"
+    puts "signed_info_canon: #{signed_info_canon}"
     signature_value_digest = Base64.encode64(signature).gsub("\n", '')
 
     signature_value_node = Nokogiri::XML::Node.new('SignatureValue', document)
