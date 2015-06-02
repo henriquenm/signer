@@ -7,7 +7,7 @@ require "signer/digester"
 require "signer/version"
 
 class Signer
-  attr_accessor :document, :private_key, :signature_algorithm_id
+  attr_accessor :document, :private_key, :signature_algorithm_id, :service
   attr_reader :cert
   attr_writer :security_node, :signature_node, :security_token_id
 
@@ -69,7 +69,14 @@ class Signer
   end
 
   def security_node
-    @security_node.xpath("/*[name()='NFe']").first# ||= document.xpath('//wsse:Security', wsse: WSSE_NAMESPACE).first
+    # @security_node.xpath("/*[name()='NFe']").first# ||= document.xpath('//wsse:Security', wsse: WSSE_NAMESPACE).first
+    if service == :authorize
+      @security_node.xpath("/*[name()='NFe']").first
+    elsif service == :cancelation
+      @security_node.xpath("/*[name()='cancNFe']").first
+    else
+      @security_node.xpath("/*[name()='inutNFe']").first
+    end
   end
 
   def canonicalize(node = document, inclusive_namespaces=nil)
