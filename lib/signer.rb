@@ -70,7 +70,7 @@ class Signer
 
   def security_node
     # @security_node.xpath("/*[name()='NFe']").first# ||= document.xpath('//wsse:Security', wsse: WSSE_NAMESPACE).first
-    if service == :authrotize
+    if service == :authorize
       @security_node.xpath("/*[name()='NFe']").first
     elsif service == :cancelation
       @security_node.xpath("/*[name()='cancNFe']").first
