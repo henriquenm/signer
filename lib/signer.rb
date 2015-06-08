@@ -75,7 +75,7 @@ class Signer
     elsif service == :cancelation
       @security_node.xpath("/*[name()='evento']").first
     else
-      @security_node.xpath("/*[name()='inutNFe']").first
+      @security_node.xpath("/*[name()='infInut']").first
     end
   end
 
