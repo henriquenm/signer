@@ -74,7 +74,7 @@ class Signer
       @security_node.xpath("/*[name()='NFe']").first
     elsif service == :cancelation
       @security_node.xpath("/*[name()='evento']").first
-    else
+    elsif service == :numeric_disable
       @security_node.xpath("/*[name()='inutNFe']").first
     end
   end
