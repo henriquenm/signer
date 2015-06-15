@@ -24,43 +24,30 @@ class Signer
     document.to_xml(:save_with => 0)
   end
 
-  # Return symbol name for supported digest algorithms and string name for custom ones.
   def digest_algorithm
     @digester.symbol || @digester.digest_name
   end
 
-  # Allows to change algorithm for node digesting (default is SHA1).
-  #
-  # You may pass either a one of +:sha1+, +:sha256+ or +:gostr3411+ symbols
-  # or +Hash+ with keys +:id+ with a string, which will denote algorithm in XML Reference tag
-  # and +:digester+ with instance of class with interface compatible with +OpenSSL::Digest+ class.
   def digest_algorithm=(algorithm)
     @digester = Signer::Digester.new(algorithm)
   end
 
-  # Return symbol name for supported digest algorithms and string name for custom ones.
   def signature_digest_algorithm
     @sign_digester.symbol || @sign_digester.digest_name
   end
 
-  # Allows to change digesting algorithm for signature creation. Same as +digest_algorithm=+
   def signature_digest_algorithm=(algorithm)
     @sign_digester = Signer::Digester.new(algorithm)
   end
 
-  # Receives certificate for signing and tries to guess a digest algorithm for signature creation.
-  #
-  # Will change +signature_digest_algorithm+ and +signature_algorithm_id+ for known certificate types and reset to defaults for others.
   def cert=(certificate)
     @cert = certificate
-    # Try to guess a digest algorithm for signature creation
     case @cert.signature_algorithm
       when 'GOST R 34.11-94 with GOST R 34.10-2001'
         self.signature_digest_algorithm = :gostr3411
         self.signature_algorithm_id = 'http://www.w3.org/2001/04/xmldsig-more#gostr34102001-gostr3411'
-      # Add clauses for other types of keys that require other digest algorithms and identifiers
-      else # most common 'sha1WithRSAEncryption' type included here
-        self.set_default_signature_method! # Reset any changes as they can become malformed
+      else
+        self.set_default_signature_method!
     end
   end
 
@@ -69,7 +56,6 @@ class Signer
   end
 
   def security_node
-    # @security_node.xpath("/*[name()='NFe']").first# ||= document.xpath('//wsse:Security', wsse: WSSE_NAMESPACE).first
     if service == :authorize
       @security_node.xpath("/*[name()='NFe']").first
     elsif service == :cancelation
@@ -83,7 +69,6 @@ class Signer
     node.canonicalize(Nokogiri::XML::XML_C14N_1_0, inclusive_namespaces, nil) # The last argument should be exactly +nil+ to remove comments from result
   end
 
-  # <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
   def signature_node
     @signature_node ||= begin
       @signature_node = security_node.at_xpath('ds:Signature', ds: 'http://www.w3.org/2000/09/xmldsig#')
@@ -96,11 +81,6 @@ class Signer
     end
   end
 
-  # <SignedInfo>
-  #   <CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
-  #   <SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/>
-  #   ...
-  # </SignedInfo>
   def signed_info_node
     node = signature_node.at_xpath('ds:SignedInfo', ds: 'http://www.w3.org/2000/09/xmldsig#')
     unless node
@@ -116,15 +96,6 @@ class Signer
     node
   end
 
-  # <KeyInfo>
-  #   <X509Data>
-  #     <X509IssuerSerial>
-  #       <X509IssuerName>System.Security.Cryptography.X509Certificates.X500DistinguishedName</X509IssuerName>
-  #       <X509SerialNumber>13070789</X509SerialNumber>
-  #     </X509IssuerSerial>
-  #     <X509Certificate>MIID+jCCAuKgAwIBAgIEAMdxxTANBgkqhkiG9w0BAQUFADBsMQswCQYDVQQGEwJTRTEeMBwGA1UEChMVTm9yZGVhIEJhbmsgQUIgKHB1YmwpMScwJQYDVQQDEx5Ob3JkZWEgcm9sZS1jZXJ0aWZpY2F0ZXMgQ0EgMDExFDASBgNVBAUTCzUxNjQwNi0wMTIwMB4XDTA5MDYxMTEyNTAxOVoXDTExMDYxMTEyNTAxOVowcjELMAkGA1UEBhMCU0UxIDAeBgNVBAMMF05vcmRlYSBEZW1vIENlcnRpZmljYXRlMRQwEgYDVQQEDAtDZXJ0aWZpY2F0ZTEUMBIGA1UEKgwLTm9yZGVhIERlbW8xFTATBgNVBAUTDDAwOTU1NzI0Mzc3MjCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAwcgz5AzbxTbsCE51No7fPnSqmQBIMW9OiPkiHotwYQTl+H9qwDvQRyBqHN26tnw7hNvEShd1ZRGUg4drMEXDV5CmKqsAevs9lauWDaHnGKPNHZJ1hNNYXHwymksEz5zMnG8eqRdhb4vOV2FzreJeYpsgx31Bv0aTofHcHVz4uGcCAwEAAaOCASAwggEcMAkGA1UdEwQCMAAwEQYDVR0OBAoECEj6Y9/vU03WMBMGA1UdIAQMMAowCAYGKoVwRwEDMBMGA1UdIwQMMAqACEIFjfLBeTpRMDcGCCsGAQUFBwEBBCswKTAnBggrBgEFBQcwAYYbaHR0cDovL29jc3Aubm9yZGVhLnNlL1JDQTAxMA4GA1UdDwEB/wQEAwIGQDCBiAYDVR0fBIGAMH4wfKB6oHiGdmxkYXA6Ly9sZGFwLm5iLnNlL2NuPU5vcmRlYSUyMHJvbGUtY2VydGlmaWNhdGVzJTIwQ0ElMjAwMSxvPU5vcmRlYSUyMEJhbmslMjBBQiUyMChwdWJsKSxjPVNFP2NlcnRpZmljYXRlcmV2b2NhdGlvbmxpc3QwDQYJKoZIhvcNAQEFBQADggEBAEXUv87VpHk51y3TqkMb1MYDqeKvQRE1cNcvhEJhIzdDpXMA9fG0KqvSTT1e0ZI2r78mXDvtTZnpic44jX2XMSmKO6n+1taAXq940tJUhF4arYMUxwDKOso0Doanogug496gipqMlpLgvIhGt06sWjNrvHzp2eGydUFdCsLr2ULqbDcut7g6eMcmrsnrOntjEU/J3hO8gyCeldJ+fI81qarrK/I0MZLR5LWCyVG/SKduoxHLX7JohsbIGyK1qAh9fi8l6X1Rcu80v5inpu71E/DnjbkAZBo7vsj78zzdk7KNliBIqBcIszdJ3dEHRWSI7FspRxyiR0NDm4lpyLwFtfw=</X509Certificate>
-  #   </X509Data>
-  # </KeyInfo>
   def x509_data_node
     cetificate_node    = Nokogiri::XML::Node.new('X509Certificate', document)
     cetificate_node.content = Base64.encode64(cert.to_der).gsub("\n", '')
@@ -139,27 +110,6 @@ class Signer
 
     data_node
   end
-
-  ##
-  # Digests some +target_node+, which integrity you wish to track. Any changes in digested node will invalidate signed message.
-  # All digest should be calculated **before** signing.
-  #
-  # Available options:
-  # * [+:id+]                   Id for the node, if you don't want to use automatically calculated one
-  # * [+:inclusive_namespaces+] Array of namespace prefixes which definitions should be added to node during canonicalization
-  # * [+:enveloped+]
-  #
-  # Example of XML that will be inserted in message for call like <tt>digest!(node, inclusive_namespaces: ['soap'])</tt>:
-  #
-  #   <Reference URI="#_0">
-  #     <Transforms>
-  #       <Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#">
-  #         <ec:InclusiveNamespaces xmlns:ec="http://www.w3.org/2001/10/xml-exc-c14n#" PrefixList="soap" />
-  #       </Transform>
-  #     </Transforms>
-  #     <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/>
-  #     <DigestValue>aeqXriJuUCk4tPNPAGDXGqHj6ao=</DigestValue>
-  #   </Reference>
 
   def digest!(target_node, options = {})
     id = options[:id] || "_#{Digest::SHA1.hexdigest(target_node.to_s)}"
@@ -201,16 +151,6 @@ class Signer
     self
   end
 
-  ##
-  # Sign document with provided certificate, private key and other options
-  #
-  # This should be very last action before calling +to_xml+, all the required nodes should be digested with +digest!+ **before** signing.
-  #
-  # Available options:
-  # * [+:security_token+]       Serializes certificate in DER format, encodes it with Base64 and inserts it within +<BinarySecurityToken>+ tag
-  # * [+:issuer_serial+]
-  # * [+:inclusive_namespaces+] Array of namespace prefixes which definitions should be added to signed info node during canonicalization
-
   def sign!(options = {})
     if options[:security_token]
       binary_security_token_node
@@ -241,18 +181,10 @@ class Signer
 
   protected
 
-  # Reset digest algorithm for signature creation and signature algorithm identifier
   def set_default_signature_method!
     self.signature_digest_algorithm = :sha1
     self.signature_algorithm_id = 'http://www.w3.org/2000/09/xmldsig#rsa-sha1'
   end
-
-  ##
-  # Searches in namespaces, defined on +target_node+ or its ancestors,
-  # for the +namespace+ with given URI and returns its prefix.
-  #
-  # If there is no such namespace and +desired_prefix+ is specified,
-  # adds such a namespace to +target_node+ with +desired_prefix+
 
   def namespace_prefix(target_node, namespace, desired_prefix = nil)
     ns = target_node.namespaces.key(namespace)
