@@ -66,7 +66,7 @@ class Signer
   end
 
   def canonicalize(node = document, inclusive_namespaces=nil)
-    node.canonicalize(Nokogiri::XML::XML_C14N_1_0, inclusive_namespaces, nil) # The last argument should be exactly +nil+ to remove comments from result
+    node.canonicalize(Nokogiri::XML::XML_C14N_1_0, inclusive_namespaces, nil)
   end
 
   def signature_node
@@ -113,6 +113,7 @@ class Signer
 
   def digest!(target_node, options = {})
     id = options[:id] || "_#{Digest::SHA1.hexdigest(target_node.to_s)}"
+    target_node.inspect
     target_digest = OpenSSL::Digest::SHA1.digest(target_node)
     target_digest = Base64.encode64(target_digest.to_s).gsub(/\n/, '')
 
