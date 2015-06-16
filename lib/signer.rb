@@ -113,7 +113,11 @@ class Signer
 
   def digest!(target_node, options = {})
     id = options[:id] || "_#{Digest::SHA1.hexdigest(target_node.to_s)}"
-    puts target_node.inspect
+
+    if service == :numeric_disable
+      target_digest.gsub("infInut Id", "infInut xmlns=\"http://www.portalfiscal.inf.br/nfe\" Id")
+    end
+
     target_digest = OpenSSL::Digest::SHA1.digest(target_node)
     target_digest = Base64.encode64(target_digest.to_s).gsub(/\n/, '')
 
