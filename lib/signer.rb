@@ -115,7 +115,8 @@ class Signer
     id = options[:id] || "_#{Digest::SHA1.hexdigest(target_node.to_s)}"
 
     if service == :numeric_disable
-      target_node.gsub("infInut Id", "infInut xmlns=\"http://www.portalfiscal.inf.br/nfe\" Id")
+      target_node = target_node.gsub("infInut Id", "infInut xmlns=\"http://www.portalfiscal.inf.br/nfe\" Id")
+      puts target_node.inspect
     end
 
     target_digest = OpenSSL::Digest::SHA1.digest(target_node)
